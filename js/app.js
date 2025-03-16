@@ -5,17 +5,17 @@ let output = document.querySelector(".cars")
 console.log(data)
 
 
-
 const mapCars = data.map(
-  (item, index) => {
+  (item) => {
     let formattedPrice = item.price.toLocaleString('fr-FR');
     let formattedkm = item.odometer.toLocaleString('fr-FR');
     let engineInfo = item.engine ? `${item.engine} L` : '';
+    
     return `
-        <a href="car.html?id=${index}" class="card" target="_blank">
-        <div class="bookmarks" >
-            <i class="fa-regular fa-heart" id="like-${index}"></i>
-            <i class="fa-solid fa-heart" style="display:none" id="dislike-${index}"></i>
+        <a href="car.html?id=${item.id}" class="card" target="_blank">
+        <div class="bookmarks">
+            <i class="fa-regular fa-heart" id="like-${item.id}"></i>
+            <i class="fa-solid fa-heart" style="display:none" id="dislike-${item.id}"></i>
         </div>
             <img src=${item.images} alt="">
             <div class="car-text">
@@ -25,8 +25,10 @@ const mapCars = data.map(
                 <span>${item.city} ${item.dates}</span>
             </div>
         </a>
-        `}
-)                                                                                                                                                                                               
+    `;
+  }
+);
+
 
 output.innerHTML = mapCars.join("")
 
@@ -36,34 +38,56 @@ output.innerHTML = mapCars.join("")
 
 //bookmarks
 
+document.addEventListener('DOMContentLoaded', function() {
+  let storedCars = JSON.parse(localStorage.getItem('selected_cars'));
+  if (storedCars) {
+    selected_cars = storedCars;
+    selectYarat(); 
+  }
+  updateLikeButtons(); 
+});
 
-data.forEach((item, index) => {
-  const likeButton = document.getElementById(`like-${index}`);
-  const dislikeButton = document.getElementById(`dislike-${index}`);
+function updateLikeButtons() {
+  selected_cars.forEach((item, index) => {
+    const likeButton = document.getElementById(`like-${item.id}`);
+    const dislikeButton = document.getElementById(`dislike-${item.id}`);
 
-  likeButton.onclick = function(event) {
-    event.preventDefault();
-
+    if (likeButton && dislikeButton) {
       likeButton.style.display = "none";
       dislikeButton.style.display = "block";
-      selectEkle(item);
-  }
+    }
+  });
+}
 
-  dislikeButton.onclick = function(event) {
-    event.preventDefault();
+data.forEach((item, index) => {
+  const likeButton = document.getElementById(`like-${item.id}`);
+  const dislikeButton = document.getElementById(`dislike-${item.id}`);
+
+  if (likeButton && dislikeButton) {
+    likeButton.onclick = function(event) {
+      event.preventDefault();
+      likeButton.style.display = "none";
+      dislikeButton.style.display = "block";
+      selectEkle(item); 
+    }
+
+    dislikeButton.onclick = function(event) {
+      event.preventDefault();
       dislikeButton.style.display = "none";
       likeButton.style.display = "block";
-      cixar(item);
+      cixar(item.id); 
+    }
   }
 });
 
-let selected_cars=[]
+let selected_cars = [];
 
-function selectEkle(item, id) {
+function selectEkle(item) {
   let mevcutMəhsul = selected_cars.find(car => car.id === item.id);
   if (!mevcutMəhsul) {
     selected_cars.push(item);
   }
+  localStorage.setItem('selected_cars', JSON.stringify(selected_cars)); 
   selectYarat();
 }
 
@@ -71,36 +95,55 @@ function selectYarat() {
   let liked_cars = document.querySelector('.liked_cars');
   liked_cars.innerHTML = '';  
 
-  selected_cars.forEach(item => {
-      let itemDiv = document.createElement('div');
-      itemDiv.classList.add('cart-item');
-      let formattedPrice = item.price.toLocaleString('fr-FR');
+  if (selected_cars.length === 0) {
+    liked_cars.innerHTML = `<div class="not_liked">
+            <img src="https://turbo.azstatic.com/assets/shared/bookmarks/bookmarks-bg-da37770522e510318ac5c34e9532f2c28225f6e90d3a5736176dadd131f973db.svg" alt="">
+            <p>Bəyəndiyiniz elanları ürək işarəsinə klik edərək seçilmişlərə əlavə edin.</p>
+        </div>`;
+  } else {
+  selected_cars.forEach((item) => {
+    let itemDiv = document.createElement('div');
+    itemDiv.classList.add('cart-item');
+    let formattedPrice = item.price.toLocaleString('fr-FR');
     let formattedkm = item.odometer.toLocaleString('fr-FR');
     let engineInfo = item.engine ? `${item.engine} L` : '';
-      itemDiv.innerHTML = `
-        <a href="car.html?id=${index}" class="card" target="_blank">
+    
+    itemDiv.innerHTML = `
+      <a href="car.html?id=${item.id}" class="card" target="_blank">
         <div class="bookmarks">
-            <i class="fa-regular fa-heart" id="like-${index}"></i>
-            <i class="fa-solid fa-heart" id="dislike-${index}" style="display:none"></i>
+          <i class="fa-regular fa-heart" id="like-${item.id}" style="display:none"></i>
+          <i class="fa-solid fa-heart" id="dislike-${item.id}" style="display:block"></i>
         </div>
-            <img src=${item.images} alt="">
-            <div class="car-text">
-                <h3>${formattedPrice} ${item.currency}</h3>
-                <p>${item.brand} ${item.model}</p>
-                <p>${item.year} ${engineInfo ? `, ${engineInfo}` : ''}, ${formattedkm} ${item.odometerUnit}</p>
-                <span>${item.city} ${item.dates}</span>
-            </div>
-        </a>
-        `;
-      liked_cars.appendChild(itemDiv);
+        <img src=${item.images} alt="">
+        <div class="car-text">
+          <h3>${formattedPrice} ${item.currency}</h3>
+          <p>${item.brand} ${item.model}</p>
+          <p>${item.year} ${engineInfo ? `, ${engineInfo}` : ''}, ${formattedkm} ${item.odometerUnit}</p>
+          <span>${item.city} ${item.dates}</span>
+        </div>
+      </a>
+    `;
+    liked_cars.appendChild(itemDiv);
   });
+  }
 }
 
 function cixar(id) {
   selected_cars = selected_cars.filter(item => item.id !== id);
+  localStorage.setItem('selected_cars', JSON.stringify(selected_cars));
   selectYarat();
+  updateLikeButtons();
 }
 
+let main = document.querySelector("main");
+let like_head = document.querySelector(".like_head");
+let bookmarks = document.getElementById("bookmarks");
+bookmarks.onclick = function() {
+  let liked_cars = document.querySelector('.liked_cars');
+  liked_cars.style.display = "flex";
+  like_head.style.display = "block";
+  main.style.display = "none";
+}
 
 
 
@@ -914,35 +957,6 @@ function selectType(i) {
 
 
 
-//Price
-// let minprice=document.getElementById("minprice")
-// let maxprice=document.getElementById("maxprice")
-// let minclone=document.querySelector(".minclone")
-// let maxclone=document.querySelector(".maxclone")
-
-// minprice.onfocus = minFocus 
-// maxprice.onfocus = maksFocus 
-// function minFocus(){ 
-//   minclone.style.top = '5px' 
-//   minprice.style.paddingBlock = '18px 6px' 
-// }
-
-// function maksFocus(){ 
-//   maxclone.style.top = '5px' 
-//   maxprice.style.paddingBlock = '18px 6px'
-// } 
-
-// document.addEventListener('mousedown' , function() {
-//   if (minprice.value = '') {
-//     minclone.style.top = 'initial'}
-//   if (maxprice.value ='') {
-//     maxclone.style.top = 'initial'
-//   }
-// })
-
-
-
-
 //valutlar
 
 const valist = document.querySelector(".vallist");
@@ -1090,7 +1104,7 @@ redbtn.onclick=function(){
     let formattedkm = item.odometer.toLocaleString('fr-FR');
     let engineInfo = item.engine ? `${item.engine} L` : '';
     return `
-      <a href="car.html?id=${index}" class="card" target="_blank">
+      <a href="car.html?id=${item.id}" class="card" target="_blank">
         <div class="bookmarks">
             <i class="fa-regular fa-heart" id="like-${index}"></i>
             <i class="fa-solid fa-heart" id="dislike-${index}" style="display:none"></i>
