@@ -955,6 +955,10 @@ footer{
         gap: 20px;
         align-items: center;
     }
+    .filter-inputs{
+        justify-content: center;
+        gap: 12px;
+    }
 }
 
 @media(max-width:990px){
@@ -1105,6 +1109,9 @@ footer{
     .car-price-tel a{
         width: 200px;
         padding: 24px 10px ;
+    }
+    .filter-part input{
+        width: 100%;
     }
 }
 
